@@ -1,0 +1,13 @@
+{
+    "parts": [
+        {
+            "destination": "dist",
+            "files": [
+                "js/src/*.js",
+                "js/src/*.d.ts",
+                "package.json",
+                "README.md"
+            ]
+        }
+    ]
+}

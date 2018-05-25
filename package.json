@@ -1,0 +1,46 @@
+{
+  "name": "js-testcat",
+  "version": "1.2.0",
+  "description": "Adds test categories to JavaScript unit test frameworks like mocha and jasmine",
+  "main": "index.js",
+  "scripts": {
+    "pretest": "gulp clean && tsc",
+    "test": "mocha js/test",
+    "posttest": "gulp dist"
+  },
+  "keywords": [
+    "test",
+    "categories",
+    "JavaScript",
+    "TypeScript"
+  ],
+  "author": "Microsoft Premier Services",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MicrosoftPremier/js-testcat.git"
+  },
+  "homepage": "https://github.com/MicrosoftPremier/js-testcat#readme",
+  "bugs": {
+    "email": "almtcger@microsoft.com",
+    "url": "https://github.com/MicrosoftPremier/js-testcat/issues"
+  },
+  "dependencies": {
+    "shelljs": "^0.8.2"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.3",
+    "@types/mocha": "^5.2.0",
+    "@types/node": "^9.6.7",
+    "@types/semver": "^5.5.0",
+    "@types/shelljs": "^0.8.0",
+    "@types/sinon": "^4.3.1",
+    "chai": "^4.1.2",
+    "gulp": "^3.9.1",
+    "gulp-bump": "^3.1.1",
+    "mocha": "^5.2.0",
+    "rewiremock": "^3.7.2",
+    "semver": "^5.5.0",
+    "sinon": "^5.0.10"
+  }
+}

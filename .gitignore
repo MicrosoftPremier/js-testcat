@@ -1,0 +1,7 @@
+# Node.JS modules
+node_modules/
+
+# tsc outputs
+dist/
+js/
+sourcemaps/
