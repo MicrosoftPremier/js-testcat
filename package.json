@@ -4,7 +4,7 @@
   "description": "Adds test categories to JavaScript unit test frameworks like mocha and jasmine",
   "main": "index.js",
   "scripts": {
-    "pretest": "gulp clean && tsc",
+    "pretest": "gulp clean && .\\node_modules\\.bin\\tsc.cmd",
     "test": "mocha js/test",
     "posttest": "gulp dist"
   },
@@ -41,6 +41,7 @@
     "mocha": "^5.2.0",
     "rewiremock": "^3.7.2",
     "semver": "^5.5.0",
-    "sinon": "^5.0.10"
+    "sinon": "^5.0.10",
+    "typescript": "^2.8.3"
   }
 }
