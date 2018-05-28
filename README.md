@@ -2,11 +2,15 @@
 Add test categories to mocha (BDD style) and jasmine tests.
 
 ![Build Badge](https://almtcger.visualstudio.com/_apis/public/build/definitions/2ff986e4-4f8b-4ae1-8b86-d111d5fc7294/119/badge)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+![npm](https://img.shields.io/npm/v/js-testcat.svg)
+![npm bundle size (minified)](https://img.shields.io/bundlephobia/min/js-testcat.svg)
+![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/js-testcat.svg)
 
 ## Get started
 
 ### Install the library
-Install the library to your project (usually as a dev dependeny).
+Install the library to your project (usually as a dev dependency).
 
 ```
 npm install js-testcat --save-dev
