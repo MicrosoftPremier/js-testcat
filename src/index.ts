@@ -1,6 +1,6 @@
-import * as shell from 'shelljs';
 import * as fs from 'fs';
 import { testCategories } from './testCategories';
+import { R_OK } from 'constants';
 
 let initialized: boolean = false;
 
@@ -8,70 +8,31 @@ let includedCategories: string[] = [];
 let excludedCategories: string[] = [];
 
 // @ts-ignore: Undefined describe because no direct dependency on mocha or jasmine
-let _describe: (d: string, c: (this: any) => void) => any = typeof describe !== 'undefined' ? describe : null;
+const _describe: (d: string, c: (this: any) => void) => any = typeof describe !== 'undefined' ? describe : null;
 // @ts-ignore: Undefined describe because no direct dependency on mocha or jasmine
-let _xdescribe: (d: string, c: (this: any) => void) => any = typeof xdescribe !== 'undefined' ? xdescribe : null;
+const _xdescribe: (d: string, c: (this: any) => void) => any = typeof xdescribe !== 'undefined' ? xdescribe : null;
 // @ts-ignore: Undefined describe because no direct dependency on mocha or jasmine
-let _it: (d: string, c: (this: any) => void) => any = typeof it !== 'undefined' ? it : null;
+const _it: (d: string, c: (this: any) => void) => any = typeof it !== 'undefined' ? it : null;
 // @ts-ignore: Undefined describe because no direct dependency on mocha or jasmine
-let _xit: (d: string, c: (this: any) => void) => any = typeof xit !== 'undefined' ? xit : null;
+const _xit: (d: string, c: (this: any) => void) => any = typeof xit !== 'undefined' ? xit : null;
 
 function isEnabled(categories: string | string[]): boolean {
-    let enabled: boolean;
+    categories = Array.isArray(categories) ? categories : [categories];
+    // Build the list of effective test categories by
+    //    1. including all categories that are present in the configured includes (or all, if there are no configured includes)
+    //    2. removing all categories that are present in the configured excludes
+    let finalCagetories = (categories.filter(c => !includedCategories.length || includedCategories.indexOf(c) >= 0))
+                            .filter(c => !excludedCategories.length || excludedCategories.indexOf(c) == -1);
 
-    if (!includedCategories.length) {
-        // If there are no includes, all tests are enabled unless excluded,...
-        enabled = true;
-    } else {
-        // ...otherwise only included test are run
-        enabled = false;
-    }
-
-    if (Array.isArray(categories)) {
-        for (let enabledCat of includedCategories) {
-            if (categories.indexOf(enabledCat) >= 0) {
-                enabled = true;
-                break;
-            }
-        }
-        for (let disabledCat of excludedCategories) {
-            if (categories.indexOf(disabledCat) >= 0) {
-                enabled = false;
-                break;
-            }
-        }
-    } else {
-        for (let enabledCat of includedCategories) {
-            if (categories === enabledCat) {
-                enabled = true;
-                break;
-            }
-        }
-        for (let disabledCat of excludedCategories) {
-            if (categories === disabledCat) {
-                enabled = false;
-                break;
-            }
-        }
-    }
-
-    return enabled;
-}
-
-function removeEmptyEntries(array: string[]): string[] {
-    for (let index = 0; index < array.length; ++index) {
-        if (!array[index].length) {
-            array.splice(index, 1);
-            --index;
-        }
-    }
-    return array;
+    return finalCagetories.length > 0;
 }
 
 function getCategoriesFromEnvString(envString: string): string[] {
     if (envString && envString.length) {
-        let values = envString.split(',').map(v => v.trim());
-        return removeEmptyEntries(values);
+        return envString
+                .split(',')
+                .map(v => v.trim())
+                .filter(v => v.length);
     }
     return [];
 }
@@ -85,24 +46,13 @@ function readCategoriesFromEnvironment(): void {
 }
 
 function addCategoriesFromArray(target: string[], valuesToAdd: string[]): string[] {
-    for (let v of valuesToAdd) {
-        v = v.trim();
-        if (v.length && target.indexOf(v) == -1) {
-            target.push(v);
-        }
-    }
-    return target;
+    return target.concat(valuesToAdd
+                            .map(v => v.trim())
+                            .filter(v => v.length && target.indexOf(v) == -1));
 }
 
 function removeCategoriesFromArray(target: string[], valuesToRemove: string[]): string[] {
-    for (let v of valuesToRemove) {
-        v = v.trim();
-        let index: number = -1;
-        if (v.length && (index = target.indexOf(v)) >= 0) {
-            target.splice(index, 1);
-        }
-    }
-    return target;
+    return target.filter(v => valuesToRemove.indexOf(v) == -1);
 }
 
 function init(): void {
@@ -110,6 +60,18 @@ function init(): void {
         initialized = true;
         readCategoriesFromEnvironment();
     }
+}
+
+function isAccessible(file: string): boolean {
+    if (!fs.existsSync(file)) {
+        return false;
+    }
+    try {
+        fs.accessSync(file, R_OK);
+    } catch (err) {
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -128,7 +90,7 @@ export function reset(): void {
  */
 export function addTestcatFile(file: string): void {
     init();
-    if (shell.test('-f', file)) {
+    if (isAccessible(file)) {
         let fileContent = fs.readFileSync(file).toString();
         if (fileContent && fileContent.length) {
             let categories = <testCategories> JSON.parse(fileContent);
@@ -137,7 +99,7 @@ export function addTestcatFile(file: string): void {
             excludedCategories = addCategoriesFromArray(excludedCategories, (categories.excludes || []));
         }
     } else {
-        let error = new Error('Could not find js-testcat file ' + file);
+        let error = new Error('Could not find or access js-testcat file ' + file);
         (<any>error)['showStack'] = false;
         throw error;
     }
@@ -149,11 +111,8 @@ export function addTestcatFile(file: string): void {
  */
 export function addIncludes(includes: string | string[]): void {
     init();
-    if (!Array.isArray(includes)) {
-       includedCategories =  addCategoriesFromArray(includedCategories, [includes]);
-    } else {
-        includedCategories = addCategoriesFromArray(includedCategories, includes);
-    }
+    includes = Array.isArray(includes) ? includes : [includes];
+    includedCategories = addCategoriesFromArray(includedCategories, includes);
 }
 
 /**
@@ -162,11 +121,8 @@ export function addIncludes(includes: string | string[]): void {
  */
 export function addExcludes(excludes: string | string[]): void {
     init();
-    if (!Array.isArray(excludes)) {
-       excludedCategories =  addCategoriesFromArray(excludedCategories, [excludes]);
-    } else {
-        excludedCategories = addCategoriesFromArray(excludedCategories, excludes);
-    }
+    excludes = Array.isArray(excludes) ? excludes : [excludes];
+    excludedCategories = addCategoriesFromArray(excludedCategories, excludes);
 }
 
 /**
@@ -175,7 +131,7 @@ export function addExcludes(excludes: string | string[]): void {
  */
 export function removeTestcatFile(file: string): void {
     init();
-    if (shell.test('-f', file)) {
+    if (isAccessible(file)) {
         let fileContent = fs.readFileSync(file).toString();
         if (fileContent && fileContent.length) {
             let categories = <testCategories> JSON.parse(fileContent);
@@ -184,7 +140,7 @@ export function removeTestcatFile(file: string): void {
             excludedCategories = removeCategoriesFromArray(excludedCategories, (categories.excludes || []));
         }
     } else {
-        let error = new Error('Could not find js-testcat file ' + file);
+        let error = new Error('Could not find or access js-testcat file ' + file);
         (<any>error)['showStack'] = false;
         throw error;
     }

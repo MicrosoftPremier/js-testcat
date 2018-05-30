@@ -15,13 +15,13 @@ let testcatFileToRemove = {
 };
 
 // Mocking stuff
-let readFileSyncMock = sinon.stub();
-let testMock = sinon.stub();
+let readFileSyncStub = sinon.stub();
+let existsSyncStub = sinon.stub();
+let accessSyncStub = sinon.stub();
 rewiremock('fs').with({
-    readFileSync: readFileSyncMock
-});
-rewiremock('shelljs').with({
-    test: testMock
+    existsSync: existsSyncStub,
+    accessSync: accessSyncStub,
+    readFileSync: readFileSyncStub
 });
 rewiremock.enable();
 
@@ -37,8 +37,9 @@ describe('js-testcat', () => {
 
     afterEach(() => {
         jstestcat.reset();
-        readFileSyncMock.reset();
-        testMock.reset();
+        existsSyncStub.reset();
+        accessSyncStub.reset();
+        readFileSyncStub.reset();
     });
     
     describe('includes', () => {
@@ -97,8 +98,8 @@ describe('js-testcat', () => {
         });
 
         it('can be added through js-testcat file via code', () => {
-            testMock.returns(true);
-            readFileSyncMock.returns(JSON.stringify(testcatFileToAdd));
+            existsSyncStub.returns(true);
+            readFileSyncStub.returns(JSON.stringify(testcatFileToAdd));
             let filename = 'testcat.json';
 
             jstestcat.addTestcatFile(filename);
@@ -106,12 +107,12 @@ describe('js-testcat', () => {
             jstestcat.getIncludes().should.be.an('Array')
                 .with.lengthOf(testcatFileToAdd.includes.length, 'Number of includes does not match js-testcat files')
                 .that.has.members(testcatFileToAdd.includes, 'Includes do not match js-testcat file');
-            readFileSyncMock.calledOnceWithExactly(filename);
+            readFileSyncStub.calledOnceWithExactly(filename);
         });
 
         it('can be removed through js-testcat file via code', () => {
-            testMock.returns(true);
-            readFileSyncMock.returns(JSON.stringify(testcatFileToRemove));
+            existsSyncStub.returns(true);
+            readFileSyncStub.returns(JSON.stringify(testcatFileToRemove));
             let filename = 'testcat.json';
 
             jstestcat.addIncludes([ 'Cat1', 'Cat2', 'Cat3', 'Cat4' ]);
@@ -121,19 +122,19 @@ describe('js-testcat', () => {
             jstestcat.getIncludes().should.be.an('Array')
                 .with.lengthOf(remainingCategories.length, 'Number of includes does not match js-testcat files')
                 .that.has.members(remainingCategories, 'Includes do not match js-testcat file');
-            readFileSyncMock.calledOnceWithExactly(filename);
+            readFileSyncStub.calledOnceWithExactly(filename);
         });
 
         it('can be added through js-testcat file from environment variable JSTESTCAT_FILE', () => {
-            testMock.returns(true);
-            readFileSyncMock.returns(JSON.stringify(testcatFileToAdd));
+            existsSyncStub.returns(true);
+            readFileSyncStub.returns(JSON.stringify(testcatFileToAdd));
             let filename = 'testcat.json';
             process.env.JSTESTCAT_FILE = filename;
 
             jstestcat.getIncludes().should.be.an('Array')
                 .with.lengthOf(testcatFileToAdd.includes.length, 'Number of includes does not match js-testcat files')
                 .that.has.members(testcatFileToAdd.includes, 'Includes do not match js-testcat file');
-            readFileSyncMock.calledOnceWithExactly(filename);
+            readFileSyncStub.calledOnceWithExactly(filename);
         });
 
     });
@@ -194,8 +195,8 @@ describe('js-testcat', () => {
         });
 
         it('can be added through js-testcat file via code', () => {
-            testMock.returns(true);
-            readFileSyncMock.returns(JSON.stringify(testcatFileToAdd));
+            existsSyncStub.returns(true);
+            readFileSyncStub.returns(JSON.stringify(testcatFileToAdd));
             let filename = 'testcat.json';
 
             jstestcat.addTestcatFile(filename);
@@ -203,12 +204,12 @@ describe('js-testcat', () => {
             jstestcat.getExcludes().should.be.an('Array')
                 .with.lengthOf(testcatFileToAdd.excludes.length, 'Number of excludes does not match js-testcat files')
                 .that.has.members(testcatFileToAdd.excludes, 'Excludes do not match js-testcat file');
-            readFileSyncMock.calledOnceWithExactly(filename);
+            readFileSyncStub.calledOnceWithExactly(filename);
         });
 
         it('can be removed through js-testcat file via code', () => {
-            testMock.returns(true);
-            readFileSyncMock.returns(JSON.stringify(testcatFileToRemove));
+            existsSyncStub.returns(true);
+            readFileSyncStub.returns(JSON.stringify(testcatFileToRemove));
             let filename = 'testcat.json';
 
             jstestcat.addExcludes([ 'ExCat1', 'ExCat2', 'ExCat3' ]);
@@ -218,19 +219,19 @@ describe('js-testcat', () => {
             jstestcat.getExcludes().should.be.an('Array')
                 .with.lengthOf(remainingCategories.length, 'Number of excludes does not match js-testcat files')
                 .that.has.members(remainingCategories, 'Excludes do not match js-testcat file');
-            readFileSyncMock.calledOnceWithExactly(filename);
+            readFileSyncStub.calledOnceWithExactly(filename);
         });
 
         it('can be added through js-testcat file from environment variable JSTESTCAT_FILE', () => {
-            testMock.returns(true);
-            readFileSyncMock.returns(JSON.stringify(testcatFileToAdd));
+            existsSyncStub.returns(true);
+            readFileSyncStub.returns(JSON.stringify(testcatFileToAdd));
             let filename = 'testcat.json';
             process.env.JSTESTCAT_FILE = filename;
 
             jstestcat.getExcludes().should.be.an('Array')
                 .with.lengthOf(testcatFileToAdd.excludes.length, 'Number of excludes does not match js-testcat files')
                 .that.has.members(testcatFileToAdd.excludes, 'Excludes do not match js-testcat file');
-            readFileSyncMock.calledOnceWithExactly(filename);
+            readFileSyncStub.calledOnceWithExactly(filename);
         });
         
     });
@@ -238,20 +239,34 @@ describe('js-testcat', () => {
     describe('js-testcat file', () => {
 
         it('should throw when trying to add a non-existing js-testcat file', () => {
-            testMock.returns(false);
+            existsSyncStub.returns(false);
 
-            expect(() => jstestcat.addTestcatFile('IDoNotExist')).to.throw('Could not find js-testcat file IDoNotExist');
+            expect(() => jstestcat.addTestcatFile('IDoNotExist')).to.throw('Could not find or access js-testcat file IDoNotExist');
+        });
+
+        it('should throw when trying to add a non-accessible js-testcat file', () => {
+            existsSyncStub.returns(true);
+            accessSyncStub.throws();
+
+            expect(() => jstestcat.addTestcatFile('IAmNotAccessible')).to.throw('Could not find or access js-testcat file IAmNotAccessible');
         });
 
         it('should throw when trying to remove a non-existing js-testcat file', () => {
-            testMock.returns(false);
+            existsSyncStub.returns(false);
 
-            expect(() => jstestcat.removeTestcatFile('IDoNotExist')).to.throw('Could not find js-testcat file IDoNotExist');
+            expect(() => jstestcat.removeTestcatFile('IDoNotExist')).to.throw('Could not find or access js-testcat file IDoNotExist');
+        });
+
+        it('should throw when trying to remove a non-accessible js-testcat file', () => {
+            existsSyncStub.returns(true);
+            accessSyncStub.throws();
+
+            expect(() => jstestcat.removeTestcatFile('IAmNotAccessible')).to.throw('Could not find or access js-testcat file IAmNotAccessible');
         });
 
         it('should not throw when trying to add an empty js-testcat file', () => {
-            testMock.returns(true);
-            readFileSyncMock.returns('');
+            existsSyncStub.returns(true);
+            readFileSyncStub.returns('');
 
             expect(() => jstestcat.addTestcatFile('IAmEmpty')).not.to.throw;
             jstestcat.getIncludes().should.be.an('Array').that.is.empty;
@@ -259,8 +274,8 @@ describe('js-testcat', () => {
         });
 
         it('should not throw when trying to add an empty js-testcat file', () => {
-            testMock.returns(true);
-            readFileSyncMock.returns('');
+            existsSyncStub.returns(true);
+            readFileSyncStub.returns('');
 
             expect(() => jstestcat.removeTestcatFile('IAmEmpty')).not.to.throw;
             jstestcat.getIncludes().should.be.an('Array').that.is.empty;
