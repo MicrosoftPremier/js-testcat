@@ -1,5 +1,5 @@
-var gulp = require('gulp');
-var bump = require('gulp-bump');
+const { src, dest } = require('gulp');
+var gulpBump = require('gulp-bump');
 var fs = require('fs');
 var shell = require('shelljs');
 
@@ -23,33 +23,38 @@ function layout(layoutFile) {
     }
 }
 
-gulp.task('clean', function(cb) {
+function clean(cb) {
     shell.rm('-rf', distPath);
     shell.rm('-rf', tscOutDir);
     cb();
-});
+}
+exports.clean = clean;
 
-gulp.task('dist', function(cb) {
+function dist(cb) {
     layout('distLayout.json');
     cb();
-});
+}
+exports.dist = dist;
 
-gulp.task('bump', function() {
-    return gulp.src('./package.json')
-        .pipe(bump({key: 'version'}))
-        .pipe(gulp.dest('./'));
-});
+function bump() {
+    return src('./package.json')
+        .pipe(gulpBump({key: 'version'}))
+        .pipe(dest('./'));
+}
+exports.bump = bump;
 
-gulp.task('bumpMinor', function() {
-    return gulp.src('./package.json')
-        .pipe(bump({key: 'version', type: 'minor'}))
-        .pipe(gulp.dest('./'));
-});
+function bumpMinor() {
+    return src('./package.json')
+        .pipe(gulpBump({key: 'version', type: 'minor'}))
+        .pipe(dest('./'));
+}
+exports.bumpMinor = bumpMinor;
 
-gulp.task('bumpMajor', function() {
-    return gulp.src('./package.json')
-        .pipe(bump({key: 'version', type: 'major'}))
-        .pipe(gulp.dest('./'));
-});
+function bumpMajor() {
+    return src('./package.json')
+        .pipe(gulpBump({key: 'version', type: 'major'}))
+        .pipe(dest('./'));
+}
+exports.bumpMajor = bumpMajor;
 
-gulp.task('default', ['build']);
+exports.default = this.dist;
